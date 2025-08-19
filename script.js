@@ -1,64 +1,46 @@
-let habits = JSON.parse(localStorage.getItem("habits")) || {};
+const scheduleList = document.getElementById("scheduleList");
+const addTaskForm = document.getElementById("addTask");
 
-function saveHabits() {
-  localStorage.setItem("habits", JSON.stringify(habits));
-}
+addTaskForm.onsubmit = function(event) {
+  event.preventDefault();
 
-function renderHabits() {
-  const list = document.getElementById("habit-list");
-  list.innerHTML = "";
+  const name = document.getElementById("taskName").value;
+  const time = new Date(document.getElementById("taskTime").value);
 
-  for (let habit in habits) {
-    const div = document.createElement("div");
-    div.className = "habit";
-    div.innerHTML = `
-      <span>${habit} | Streak: ${habits[habit].streak} ${
-      habits[habit].done ? "✅ Done" : ""
-    }</span>
-      <button onclick="toggleHabit('${habit}')">Toggle</button>
-    `;
-    list.appendChild(div);
+  if (isNaN(time.getTime()) || time < new Date()) {
+    alert("Enter a valid future time!");
+    return;
   }
+
+  const li = document.createElement("li");
+  li.innerHTML = `<span>${name}</span>
+    <span class="task-time">${time.toLocaleString()}</span>`;
+  scheduleList.appendChild(li);
+
+  const delay = time.getTime() - new Date().getTime();
+  setTimeout(() => {
+
+// Optional: play a sound
+let audio = new Audio("gaana/Victory Anthem - PagalWorld.mp3");
+audio.play();
+
+// Optional: Desktop notification (requires permission)
+if (Notification.permission === "granted") {
+  new Notification(`It's time for: ${name}`);
+} else if (Notification.permission !== "denied") {
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      new Notification(`It's time for: ${name}`);
+    }
+  });
 }
 
-function addHabit() {
-  const input = document.getElementById("habit-input");
-  const habit = input.value.trim();
+  }, delay);
 
-  if (habit && !habits[habit]) {
-    habits[habit] = { done: false, streak: 0 };
-    saveHabits();
-    renderHabits();
-  } else {
-    alert("Invalid or duplicate habit!");
-  }
-  input.value = "";
+  addTaskForm.reset();
+};
+
+// Ask for notification permission
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
 }
-
-function toggleHabit(habit) {
-  if (!habits[habit].done) {
-    habits[habit].done = true;
-    habits[habit].streak++;
-  } else {
-    habits[habit].done = false;
-    habits[habit].streak = Math.max(0, habits[habit].streak - 1);
-  }
-  saveHabits();
-  renderHabits();
-}
-
-document.getElementById("add-btn").addEventListener("click", addHabit);
-
-// Auto-reset every new day
-const today = new Date().toLocaleDateString();
-const lastUpdate = localStorage.getItem("lastUpdate");
-
-if (lastUpdate !== today) {
-  for (let habit in habits) {
-    habits[habit].done = false;
-  }
-  localStorage.setItem("lastUpdate", today);
-  saveHabits();
-}
-
-renderHabits();
