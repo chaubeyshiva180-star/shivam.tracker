@@ -21,7 +21,7 @@ addTaskForm.onsubmit = function(event) {
   setTimeout(() => {
 
 // Optional: play a sound
-let audio = new Audio("gaana/Victory Anthem - PagalWorld.mp3");
+let audio = new Audio("https://pagalworld.zone/music/shoorveer-3");
 audio.play();
 
 // Optional: Desktop notification (requires permission)
